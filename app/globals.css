@@ -1,3 +1,4 @@
+@layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -22,9 +23,9 @@
 }
 
 @utility font-header {
-  font-family: var(--font-poppins);
+  font-family: var(--font-poppins), sans-serif;
 }
 
 @utility font-body {
-  font-family: var(--font-inter);
+  font-family: var(--font-inter), sans-serif;
 }

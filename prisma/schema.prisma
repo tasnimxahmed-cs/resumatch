@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id             String          @id @default(cuid())
+  title          String
+  company        String
+  url            String? // Original job listing link
+  summary        String? // AI-generated summary
+  expectations   String? // Extracted job expectations
+  qualifications String? // Extracted qualifications
+  fullJD         String // Raw job description (scraped or pasted)
+  resumes        ResumeVersion[]
+  userId         String // Clerk user ID
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model ResumeVersion {
+  id        String       @id @default(cuid())
+  filename  String?
+  content   String
+  job       Job          @relation(fields: [jobId], references: [id])
+  jobId     String
+  feedback  GPTFeedback?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model GPTFeedback {
+  id          String        @id @default(cuid())
+  resume      ResumeVersion @relation(fields: [resumeId], references: [id])
+  resumeId    String        @unique
+  score       Int
+  suggestions String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}

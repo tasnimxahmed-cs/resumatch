@@ -1,45 +1,28 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+import { Sun, Moon } from 'lucide-react'
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+  useEffect(() => setMounted(true), [])
 
-    if (savedTheme === "dark") {
-      document.documentElement.classList.add("dark");
-      setTheme("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      setTheme("light");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const html = document.documentElement;
-    const isDark = html.classList.contains("dark");
-
-    if (isDark) {
-      html.classList.remove("dark");
-      setTheme("light");
-      localStorage.setItem("theme", "light");
-    } else {
-      html.classList.add("dark");
-      setTheme("dark");
-      localStorage.setItem("theme", "dark");
-    }
-  };
+  if (!mounted) return null
 
   return (
     <button
-      onClick={toggleTheme}
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
       aria-label="Toggle Theme"
-      className="rounded transition align-middle"
+      className="rounded transition align-middle cursor-pointer"
     >
-      {theme === "dark" ? <Sun size={18} className="align-middle hover:text-brand-dark" /> : <Moon size={18} className="align-middle hover:text-brand-light" />}
+      {resolvedTheme === 'dark' ? (
+        <Sun size={18} className="align-middle hover:text-brand-dark transition" />
+      ) : (
+        <Moon size={18} className="align-middle hover:text-brand-light transition" />
+      )}
     </button>
-  );
+  )
 }
