@@ -1,33 +1,27 @@
-import { auth } from '@clerk/nextjs/server'
-import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { extractJobInfoFromLink } from "@/lib/gemini";
 
 export async function POST(req: Request) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  const { jobDescription } = await req.json();
+  const { jobLink } = await req.json();
 
-  // TODO: Replace this with actual AI extraction logic (OpenAI)
-  const fakeExtracted = {
-    title: "Social Media Manager",
-    company: "RazorFish",
-    summary: "Join OpenAI to work on cutting-edge artificial intelligence applications.",
-    expectations: "Design scalable backend systems, collaborate with research teams.",
-    qualifications: "3+ years experience with TypeScript, strong knowledge of distributed systems.",
-  };
+  if (!jobLink || !jobLink.startsWith("http")) {
+    return NextResponse.json({ error: "Invalid or missing job link." }, { status: 400 });
+  }
 
-  const job = await prisma.job.create({
-    data: {
-      userId,
-      title: fakeExtracted.title,
-      company: fakeExtracted.company,
-      fullJD: jobDescription,
-      summary: fakeExtracted.summary,
-      expectations: fakeExtracted.expectations,
-      qualifications: fakeExtracted.qualifications,
-    },
-  });
+  const extracted = await extractJobInfoFromLink(jobLink);
 
-  return NextResponse.json(job);
+  if (!extracted) {
+    return NextResponse.json(
+      { error: "Failed to extract job info from the link. Try another one or paste the description manually." },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ ...extracted });
 }
