@@ -7,14 +7,14 @@ import {
   Upload,
   FileText,
   FilePlus,
+  Target,
   Settings,
 } from "lucide-react";
 
 const navItems = [
   { name: "Jobs", href: "/dashboard", icon: Briefcase },
-  { name: "Upload Job", href: "/dashboard/upload-job", icon: FilePlus },
-  { name: "Upload Resume", href: "/dashboard/upload-resume", icon: Upload },
   { name: "Resumes", href: "/dashboard/resumes", icon: FileText },
+  { name: "Matches", href: "/dashboard/matches", icon: Target },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
