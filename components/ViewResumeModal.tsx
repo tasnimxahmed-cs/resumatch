@@ -34,36 +34,37 @@ export function ViewResumeModal({ open, onOpenChange, resumeId }: ViewResumeModa
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchResume = async () => {
+      if (!resumeId) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch(`/api/resumes/${resumeId}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error || "Failed to fetch resume details");
+          return;
+        }
+
+        setResume(data);
+      } catch (error: unknown) {
+        console.log(error);
+        setError("Failed to fetch resume details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (open && resumeId) {
       fetchResume();
     } else {
       setResume(null);
       setError(null);
     }
-  }, [open, resumeId]);
-
-  const fetchResume = async () => {
-    if (!resumeId) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/resumes/${resumeId}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to fetch resume details");
-        return;
-      }
-
-      setResume(data);
-    } catch (error) {
-      setError("Failed to fetch resume details");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [open, resumeId]); // Now all dependencies are included
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

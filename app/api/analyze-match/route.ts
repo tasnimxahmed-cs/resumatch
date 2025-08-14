@@ -85,7 +85,7 @@ export async function POST(req: Request) {
       jobTitle: `${job.title} @ ${job.company}`
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Match analysis error:", error);
     return NextResponse.json(
       { error: "Failed to analyze match. Please try again." }, 

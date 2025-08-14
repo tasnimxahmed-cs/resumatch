@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +50,8 @@ interface MatchAnalysis {
   jobTitle: string;
 }
 
-export default function MatchesPage() {
+// Component that uses useSearchParams - wrapped in Suspense
+function MatchesContent() {
   const searchParams = useSearchParams();
   
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -79,7 +80,7 @@ export default function MatchesPage() {
           const resumesData = await resumesRes.json();
           setResumes(resumesData);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Failed to fetch data:", err);
       }
     }
@@ -123,7 +124,8 @@ export default function MatchesPage() {
       }
 
       setMatchResult(data);
-    } catch (err) {
+    } catch (err: unknown) {
+      console.log(err);
       setError("Unexpected error during analysis.");
     } finally {
       setLoading(false);
@@ -383,5 +385,33 @@ export default function MatchesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Loading fallback component
+function MatchesLoading() {
+  return (
+    <div className="max-w-6xl px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold font-header text-text-light dark:text-text-dark mb-2">
+          Resume-Job Matching
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 font-body">
+          Analyze how well your resumes match specific job requirements
+        </p>
+      </div>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-light dark:text-brand-dark" />
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense wrapper
+export default function MatchesPage() {
+  return (
+    <Suspense fallback={<MatchesLoading />}>
+      <MatchesContent />
+    </Suspense>
   );
 }

@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       message: "Resume uploaded successfully"
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Resume upload error:", error);
     return NextResponse.json(
       { error: "Failed to process resume. Please try again." }, 

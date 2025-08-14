@@ -102,6 +102,7 @@ export default function JobsDashboard() {
 
       setModalOpen(true);
     } catch (error) {
+      console.log(error)
       setImportError("Unexpected error during job extraction.");
     } finally {
       setImporting(false);
@@ -140,6 +141,7 @@ export default function JobsDashboard() {
         fetchJobs(); // Refresh the jobs list
       }
     } catch (error) {
+      console.log(error)
       setImportError("Unexpected error while saving job.");
     } finally {
       setImporting(false);

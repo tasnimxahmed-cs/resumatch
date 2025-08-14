@@ -36,24 +36,6 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string | null>
     return text.length > 50 ? text : null;
   } catch (error) {
     console.error('PDF parsing error:', error);
-    
-    // If primary method fails, try alternative approach
-    try {
-      console.log("Trying alternative PDF parsing method...");
-      
-      // Try with require instead of import
-      const pdfParseRequire = require('pdf-parse');
-      const fallbackData = await pdfParseRequire(buffer);
-      const fallbackText = fallbackData.text?.trim();
-      
-      if (fallbackText && fallbackText.length > 50) {
-        console.log(`Fallback extraction successful: ${fallbackText.length} characters`);
-        return fallbackText;
-      }
-    } catch (fallbackError) {
-      console.error('Fallback PDF parsing also failed:', fallbackError);
-    }
-    
     return null;
   }
 }

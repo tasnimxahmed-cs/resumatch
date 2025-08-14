@@ -163,6 +163,7 @@ export default function ResumesDashboard() {
       setSelectedJobId("");
       fetchData(); // Refresh the resumes list
     } catch (err) {
+      console.log(err)
       setUploadError("Unexpected error during upload.");
     } finally {
       setUploading(false);

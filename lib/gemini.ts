@@ -100,7 +100,7 @@ ${jobContent}
       ...parsed,
       fullJD: jobContent,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("extractJobInfoFromLink error:", error);
     return null;
   }

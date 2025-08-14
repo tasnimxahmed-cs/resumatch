@@ -97,7 +97,7 @@ Be honest but constructive. Provide actionable suggestions.
 
     return parsed as MatchResult;
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Resume matching error:", error);
     return null;
   }
@@ -165,7 +165,7 @@ Each suggestion should be:
 
     return parsed.filter(suggestion => typeof suggestion === 'string' && suggestion.length > 10);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Resume suggestions error:", error);
     return null;
   }

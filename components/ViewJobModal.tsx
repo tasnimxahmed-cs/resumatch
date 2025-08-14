@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Loader2, Calendar, Building, FileText, Target, GraduationCap } from "lucide-react";
 
 interface Job {
@@ -34,36 +33,37 @@ export function ViewJobModal({ open, onOpenChange, jobId }: ViewJobModalProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchJob = async () => {
+      if (!jobId) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch(`/api/jobs/${jobId}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error || "Failed to fetch job details");
+          return;
+        }
+
+        setJob(data);
+      } catch (error: unknown) {
+        console.log(error);
+        setError("Failed to fetch job details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (open && jobId) {
       fetchJob();
     } else {
       setJob(null);
       setError(null);
     }
-  }, [open, jobId]);
-
-  const fetchJob = async () => {
-    if (!jobId) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/jobs/${jobId}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to fetch job details");
-        return;
-      }
-
-      setJob(data);
-    } catch (error) {
-      setError("Failed to fetch job details");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [open, jobId]); // Now all dependencies are included
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

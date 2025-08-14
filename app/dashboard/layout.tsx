@@ -1,4 +1,3 @@
-import { ClerkProvider } from '@clerk/nextjs';
 import Navbar from "@/components/dashboard/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { Inter, Poppins } from 'next/font/google'
