@@ -15,6 +15,8 @@ import {
   Plus
 } from "lucide-react";
 import ResumeCard from "@/components/ResumeCard";
+import { ViewResumeModal } from "@/components/ViewResumeModal";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { useRouter } from "next/navigation";
 
 interface Job {
@@ -50,6 +52,15 @@ export default function ResumesDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // State for view modal
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
+
+  // State for delete operation
+  const [deletingResumeId, setDeletingResumeId] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{id: string, name: string} | null>(null);
 
   // Fetch data on mount
   useEffect(() => {
@@ -122,7 +133,7 @@ export default function ResumesDashboard() {
     if (!file) {
       setUploadError("Please select a file first.");
       return;
-    }
+    } 
 
     setUploading(true);
     setUploadError(null);
@@ -156,6 +167,44 @@ export default function ResumesDashboard() {
     } finally {
       setUploading(false);
     }
+  };
+
+  // Delete resume functionality with modal
+  const handleDeleteClick = (resumeId: string, resumeName: string) => {
+    setItemToDelete({ id: resumeId, name: resumeName });
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+    
+    setDeletingResumeId(itemToDelete.id);
+    
+    try {
+      const res = await fetch(`/api/resumes/${itemToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete resume.");
+      }
+
+      // Remove resume from local state
+      setResumes(resumes.filter(resume => resume.id !== itemToDelete.id));
+      setItemToDelete(null);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      throw error; // Re-throw to keep modal open
+    } finally {
+      setDeletingResumeId(null);
+    }
+  };
+
+  // View resume functionality
+  const handleViewResume = (resumeId: string) => {
+    setSelectedResumeId(resumeId);
+    setViewModalOpen(true);
   };
 
   // Resume actions
@@ -345,19 +394,32 @@ export default function ResumesDashboard() {
             <ResumeCard 
               key={resume.id} 
               resume={resume}
-              onDelete={(resumeId) => {
-                // TODO: Implement delete functionality
-                console.log("Delete resume:", resumeId);
-              }}
-              onView={(resumeId) => {
-                // TODO: Implement view content functionality
-                console.log("View resume:", resumeId);
-              }}
+              onDeleteClick={handleDeleteClick}
+              onView={handleViewResume}
               onAnalyze={handleAnalyzeResume}
+              deleting={deletingResumeId === resume.id}
             />
           ))}
         </div>
       )}
+
+      {/* View Resume Modal */}
+      <ViewResumeModal
+        open={viewModalOpen}
+        onOpenChange={setViewModalOpen}
+        resumeId={selectedResumeId}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        title="Delete Resume"
+        description="Are you sure you want to delete this resume? This action cannot be undone and will also remove any associated feedback."
+        itemName={itemToDelete?.name || ""}
+        onConfirm={handleDeleteConfirm}
+        loading={deletingResumeId === itemToDelete?.id}
+      />
     </div>
   );
 }

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Plus, Loader2, Search } from "lucide-react";
 import JobCard from "@/components/JobCard";
 import { EditJobModal } from "@/components/EditJobModal";
+import { ViewJobModal } from "@/components/ViewJobModal";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
 interface Job {
   id: string;
@@ -36,6 +38,15 @@ export default function JobsDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // State for view modal
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
+  // State for delete operation
+  const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{id: string, name: string} | null>(null);
 
   // Fetch jobs on mount
   useEffect(() => {
@@ -149,6 +160,44 @@ export default function JobsDashboard() {
     setImportError(null);
   };
 
+  // Delete job functionality with modal
+  const handleDeleteClick = (jobId: string, jobName: string) => {
+    setItemToDelete({ id: jobId, name: jobName });
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+    
+    setDeletingJobId(itemToDelete.id);
+    
+    try {
+      const res = await fetch(`/api/jobs/${itemToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete job.");
+      }
+
+      // Remove job from local state
+      setJobs(jobs.filter(job => job.id !== itemToDelete.id));
+      setItemToDelete(null);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      throw error; // Re-throw to keep modal open
+    } finally {
+      setDeletingJobId(null);
+    }
+  };
+
+  // View job functionality
+  const handleViewJob = (jobId: string) => {
+    setSelectedJobId(jobId);
+    setViewModalOpen(true);
+  };
+
   // Filter jobs based on search
   const filteredJobs = jobs.filter(job => 
     job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -250,14 +299,9 @@ export default function JobsDashboard() {
             <JobCard 
               key={job.id} 
               job={job}
-              onDelete={(jobId) => {
-                // TODO: Implement delete functionality
-                console.log("Delete job:", jobId);
-              }}
-              onView={(jobId) => {
-                // TODO: Implement view details functionality
-                console.log("View job:", jobId);
-              }}
+              onDeleteClick={handleDeleteClick}
+              onView={handleViewJob}
+              deleting={deletingJobId === job.id}
             />
           ))}
         </div>
@@ -272,6 +316,24 @@ export default function JobsDashboard() {
         onSave={handleSaveJob}
         onDiscard={handleDiscardJob}
         loading={importing}
+      />
+
+      {/* View Job Modal */}
+      <ViewJobModal
+        open={viewModalOpen}
+        onOpenChange={setViewModalOpen}
+        jobId={selectedJobId}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        title="Delete Job"
+        description="Are you sure you want to delete this job? This action cannot be undone and will also remove any associated resumes and feedback."
+        itemName={itemToDelete?.name || ""}
+        onConfirm={handleDeleteConfirm}
+        loading={deletingJobId === itemToDelete?.id}
       />
     </div>
   );

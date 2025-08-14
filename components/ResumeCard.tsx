@@ -13,7 +13,8 @@ import {
   Download,
   Trash2,
   Eye,
-  Target
+  Target,
+  Loader2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,24 +22,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Resume } from "@/types/resume"
 
 interface ResumeCardProps {
-  resume: {
-    id: string;
-    filename?: string;
-    createdAt: string;
-    job?: {
-      id: string;
-      title: string;
-      company: string;
-    };
-  };
-  onDelete?: (resumeId: string) => void;
-  onView?: (resumeId: string) => void;
-  onAnalyze?: (resumeId: string, jobId?: string) => void;
+  resume: Resume;
+  onDelete?: (resumeId: string) => void; // Made optional
+  onView?: (resumeId: string) => void; // Made optional
+  onAnalyze?: (resumeId: string, jobId?: string) => void; // Made optional
+  onDeleteClick?: (resumeId: string, resumeName: string) => void; // For modal trigger
+  deleting?: boolean; // Optional prop to show loading state
 }
 
-export default function ResumeCard({ resume, onDelete, onView, onAnalyze }: ResumeCardProps) {
+export default function ResumeCard({ 
+  resume, 
+  onDelete, 
+  onView, 
+  onAnalyze,
+  onDeleteClick, 
+  deleting = false 
+}: ResumeCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -54,6 +56,27 @@ export default function ResumeCard({ resume, onDelete, onView, onAnalyze }: Resu
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(`/api/resumes/${resume.id}/download`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = resume.filename || `resume-${resume.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        console.error('Download failed');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -65,6 +88,9 @@ export default function ResumeCard({ resume, onDelete, onView, onAnalyze }: Resu
   const getDisplayName = () => {
     return resume.filename || `Resume ${resume.id.slice(-8)}`;
   };
+
+  // Use the deleting prop from parent or local state
+  const showDeleting = deleting || isDeleting;
 
   return (
     <Card className="bg-surface-light dark:bg-surface-dark hover:shadow-md transition-shadow">
@@ -86,35 +112,48 @@ export default function ResumeCard({ resume, onDelete, onView, onAnalyze }: Resu
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled={showDeleting}>
+                {showDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MoreHorizontal className="h-4 w-4" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {onView && (
-                <DropdownMenuItem onClick={() => onView(resume.id)}>
+                <DropdownMenuItem onClick={() => onView(resume.id)} disabled={showDeleting}>
                   <Eye className="w-4 h-4 mr-2" />
                   View Content
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownload} disabled={showDeleting}>
                 <Download className="w-4 h-4 mr-2" />
                 Download PDF
               </DropdownMenuItem>
               {onAnalyze && (
-                <DropdownMenuItem onClick={() => onAnalyze(resume.id, resume.job?.id)}>
+                <DropdownMenuItem 
+                  onClick={() => onAnalyze(resume.id, resume.job?.id)} 
+                  disabled={showDeleting}
+                >
                   <Target className="w-4 h-4 mr-2" />
                   Analyze Match
                 </DropdownMenuItem>
               )}
-              {onDelete && (
+              {(onDelete || onDeleteClick) && (
                 <DropdownMenuItem 
-                  onClick={handleDelete} 
-                  disabled={isDeleting}
+                  onClick={() => {
+                    if (onDeleteClick) {
+                      onDeleteClick(resume.id, getDisplayName());
+                    } else if (onDelete) {
+                      handleDelete();
+                    }
+                  }}
+                  disabled={showDeleting}
                   className="text-red-600 dark:text-red-400"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  {isDeleting ? "Deleting..." : "Delete"}
+                  {showDeleting ? "Deleting..." : "Delete"}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -149,6 +188,7 @@ export default function ResumeCard({ resume, onDelete, onView, onAnalyze }: Resu
               variant="outline"
               size="sm"
               className="w-full text-xs"
+              disabled={showDeleting}
             >
               <Target className="w-3 h-3 mr-1" />
               Quick Analyze

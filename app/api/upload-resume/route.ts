@@ -4,15 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { extractTextFromPDF } from "@/lib/pdf-parser";
 
 export async function POST(req: Request) {
-  console.log('1')
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  console.log('2')
 
   try {
-    console.log('3')
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const jobId = formData.get("jobId") as string;

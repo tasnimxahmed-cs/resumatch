@@ -4,18 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Briefcase,
-  Upload,
   FileText,
-  FilePlus,
   Target,
-  Settings,
 } from "lucide-react";
 
 const navItems = [
   { name: "Jobs", href: "/dashboard", icon: Briefcase },
   { name: "Resumes", href: "/dashboard/resumes", icon: FileText },
   { name: "Matches", href: "/dashboard/matches", icon: Target },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function Sidebar() {

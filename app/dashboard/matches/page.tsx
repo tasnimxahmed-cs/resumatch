@@ -261,10 +261,10 @@ export default function MatchesPage() {
           {/* Detailed Analysis */}
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="strengths">Strengths</TabsTrigger>
-              <TabsTrigger value="gaps">Gaps</TabsTrigger>
-              <TabsTrigger value="keywords">Keywords</TabsTrigger>
+              <TabsTrigger className="cursor-pointer" value="overview">Overview</TabsTrigger>
+              <TabsTrigger className="cursor-pointer" value="strengths">Strengths</TabsTrigger>
+              <TabsTrigger className="cursor-pointer" value="gaps">Gaps</TabsTrigger>
+              <TabsTrigger className="cursor-pointer" value="keywords">Keywords</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">

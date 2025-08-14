@@ -10,7 +10,8 @@ import {
   ExternalLink, 
   MoreHorizontal,
   Eye,
-  Trash2 
+  Trash2,
+  Loader2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -18,21 +19,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Job } from "@/types/job"
 
 interface JobCardProps {
-  job: {
-    id: string;
-    title: string;
-    company: string;
-    summary?: string;
-    url?: string;
-    createdAt: string;
-  };
-  onDelete?: (jobId: string) => void;
-  onView?: (jobId: string) => void;
+  job: Job;
+  onDelete?: (jobId: string) => void; // Made optional
+  onView: (jobId: string) => void;
+  onDeleteClick?: (jobId: string, jobName: string) => void; // For modal trigger
+  deleting?: boolean; // Optional prop to show loading state
 }
 
-export default function JobCard({ job, onDelete, onView }: JobCardProps) {
+export default function JobCard({ job, onDelete, onView, onDeleteClick, deleting = false }: JobCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -56,6 +53,9 @@ export default function JobCard({ job, onDelete, onView }: JobCardProps) {
     });
   };
 
+  // Use the deleting prop from parent or local state
+  const showDeleting = deleting || isDeleting;
+
   return (
     <Card className="bg-surface-light dark:bg-surface-dark hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
@@ -72,13 +72,17 @@ export default function JobCard({ job, onDelete, onView }: JobCardProps) {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled={showDeleting}>
+                {showDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MoreHorizontal className="h-4 w-4" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {onView && (
-                <DropdownMenuItem onClick={() => onView(job.id)}>
+                <DropdownMenuItem onClick={() => onView(job.id)} disabled={showDeleting}>
                   <Eye className="w-4 h-4 mr-2" />
                   View Details
                 </DropdownMenuItem>
@@ -91,14 +95,20 @@ export default function JobCard({ job, onDelete, onView }: JobCardProps) {
                   </a>
                 </DropdownMenuItem>
               )}
-              {onDelete && (
+              {(onDelete || onDeleteClick) && (
                 <DropdownMenuItem 
-                  onClick={handleDelete} 
-                  disabled={isDeleting}
+                  onClick={() => {
+                    if (onDeleteClick) {
+                      onDeleteClick(job.id, `${job.title} at ${job.company}`);
+                    } else if (onDelete) {
+                      handleDelete();
+                    }
+                  }}
+                  disabled={showDeleting}
                   className="text-red-600 dark:text-red-400"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  {isDeleting ? "Deleting..." : "Delete"}
+                  {showDeleting ? "Deleting..." : "Delete"}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
