@@ -9,15 +9,7 @@ import JobCard from "@/components/JobCard";
 import { EditJobModal } from "@/components/EditJobModal";
 import { ViewJobModal } from "@/components/ViewJobModal";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
-
-interface Job {
-  id: string;
-  title: string;
-  company: string;
-  summary?: string;
-  url?: string;
-  createdAt: string;
-}
+import { Job } from "@/types/job"
 
 export default function JobsDashboard() {
   // State for job import
@@ -207,7 +199,7 @@ export default function JobsDashboard() {
   );
 
   return (
-    <div className="max-w-7xl px-4">
+    <div className="max-w-7xl px-4 transition">
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-header text-text-light dark:text-text-dark mb-2">
           Jobs Dashboard

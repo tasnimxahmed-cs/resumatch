@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600'], variable: '--font-poppins' })
 
 export const metadata = {
-  title: 'Your App',
-  description: '...',
+  title: 'ResuMatch',
+  description: 'Tailor Smarter. Match Better.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
